@@ -1,3 +1,9 @@
+# Note on the source for this: 
+# This was adapted from the eBird API docs listed on Postman here: https://documenter.getpostman.com/view/664302/S1ENwy59
+# Specifically, the Postman collection was converted to an openAPI spec and then adjusted by hand to:
+# - extract responses into schemas
+# - infer correct request / response types
+# - remove redundant documentation
 openapi: 3.0.0
 info:
   title: eBird API 2.0
@@ -84,13 +90,24 @@ components:
     checklist:
       type: object
       properties:
-        projId:
+        locId:
           type: string
         subId:
           type: string
-        protocolId:
+        userDisplayName:
           type: string
-        locId:
+        numSpecies:
+          type: integer
+          format: int32
+        obsDt:
+          type: string
+        obsTime:
+          type: string
+        isoObsDate:
+          type: string
+        projId:
+          type: string
+        protocolId:
           type: string
         durationHrs:
           type: number
@@ -99,8 +116,6 @@ components:
         creationDt:
           type: string
         lastEditedDt:
-          type: string
-        obsDt:
           type: string
         obsTimeValid:
           type: boolean
@@ -112,13 +127,137 @@ components:
           type: string
         submissionMethodCode:
           type: string
-        userDisplayName:
-          type: string
+        loc:
+          $ref: '#/components/schemas/location'
         obs:
           type: array
           items:
             $ref: '#/components/schemas/checklistObservation'
-
+    checklistArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/checklist'
+    location:
+      type: object
+      properties:
+        locId:
+          type: string
+        name:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        countryCode:
+          type: string
+        countryName:
+          type: string
+        subnational1Name:
+          type: string
+        subnational1Code:
+          type: string
+        isHotspot:
+          type: boolean
+        locName:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        hierarchicalName:
+          type: string
+    top100:
+      type: array
+      items:
+        type: object
+        properties:
+          profileHandle:
+            type: string
+          userDisplayName:
+            type: string
+          numSpecies:
+            type: integer
+            format: int32
+          numCompleteChecklists:
+            type: integer
+            format: int32
+          rowNum:
+            type: integer
+            format: int32
+          userId:
+            type: string
+    regionalStats:
+      type: object
+      properties:
+        numChecklists:
+          type: integer
+          format: int32
+        numContributors:
+          type: integer
+          format: int32
+        numSpecies:
+          type: integer
+          format: int32
+    hotspot:
+      type: object
+      properties:
+        locId:
+          type: string
+        locName:
+          type: string
+        countryCode:
+          type: string
+        subnational1Code:
+          type: string
+        subnational2Code:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        latestObsDt:
+          type: string
+        numSpeciesAllTime:
+          type: integer
+          format: int32
+    hotspotArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/hotspot'
+    ebirdTaxonomy:
+      type: object
+      properties:
+        sciName:
+          type: string
+        comName:
+          type: string
+        speciesCode:
+          type: string
+        category:
+          type: string
+        taxonOrder:
+          type: integer
+          format: int32
+        bandingCodes:
+          type: array
+          items:
+            type: string
+        comNameCodes:
+          type: array
+          items:
+            type: string
+        sciNameCodes:
+          type: array
+          items:
+            type: string
+        order:
+          type: string
+        familyCode:
+          type: string
+        familyComName:
+          type: string
+        familySciName:
+          type: string
 security:
   - APIKeyHeader: []
 tags:
@@ -1069,7 +1208,6 @@ paths:
                       firstName: Kathleen
                       lastName: Astahman
                       hasRichMedia: false
-                      locID: L295658
                     - speciesCode: larspa
                       comName: Lark Sparrow
                       sciName: Chondestes grammacus
@@ -1097,7 +1235,6 @@ paths:
                       firstName: Stacy
                       lastName: Moyerhainrich
                       hasRichMedia: false
-                      locID: L109147
                     - speciesCode: libher
                       comName: Little Blue Heron
                       sciName: Egretta caerulea
@@ -1125,7 +1262,6 @@ paths:
                       firstName: clay
                       lastName: spencer
                       hasRichMedia: false
-                      locID: L295658
                 example-1:
                   summary: Simple Detail
                   value:
@@ -1748,7 +1884,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/observationArray'
+                $ref: '#/components/schemas/checklistArray'
   /data/obs/{regionCode}/historic/{y}/{m}/{d}:
     get:
       tags:
@@ -1928,8 +2064,9 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/top100'
   /product/lists/{regionCode}/{y}/{m}/{d}:
     get:
       tags:
@@ -1984,8 +2121,9 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/checklistArray'
   /product/stats/{regionCode}/{y}/{m}/{d}:
     get:
       tags:
@@ -2029,8 +2167,9 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/regionalStats'
   /product/spplist/{regionCode}:
     get:
       tags:
@@ -2051,8 +2190,11 @@ paths:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
   /product/checklist/view/{subId}:
     get:
       tags:
@@ -2210,14 +2352,18 @@ paths:
           schema:
             type: string
             enum: [csv, json]
-            default: csv
+            default: json
           description: Fetch the records in CSV or JSON format.
       responses:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hotspotArray'
+            text/csv:
+              schema:
+                type: string
   /ref/hotspot/geo:
     get:
       tags:
@@ -2263,14 +2409,18 @@ paths:
           schema:
             type: string
             enum: [csv, json]
-            default: csv
+            default: json
           description: Fetch the records in CSV or JSON format.
       responses:
         '200':
           description: Successful response
           content:
-            application/json: 
-              type: object
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hotspotArray'
+            text/csv:
+              schema:
+                type: string
   /ref/hotspot/info/{locId}:
     get:
       tags:
@@ -2292,46 +2442,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  locId:
-                    type: string
-                    example: L99381
-                  name:
-                    type: string
-                    example: Stewart Park
-                  latitude:
-                    type: number
-                    format: float
-                    example: 42.4613413
-                  longitude:
-                    type: number
-                    format: float
-                    example: -76.5054578
-                  countryCode:
-                    type: string
-                    example: US
-                  countryName:
-                    type: string
-                    example: United States
-                  subnational1Name:
-                    type: string
-                    example: New York
-                  subnational1Code:
-                    type: string
-                    example: US-NY
-                  subnational2Code:
-                    type: string
-                    example: US-NY-109
-                  subnational2Name:
-                    type: string
-                    example: Tompkins
-                  isHotspot:
-                    type: boolean
-                    example: true
-                  hierarchicalName:
-                    type: string
-                    example: Stewart Park, Tompkins, New York, US
+                $ref: '#/components/schemas/location'
               example:
                 locId: L99381
                 name: Stewart Park
@@ -2345,7 +2456,6 @@ paths:
                 subnational2Name: Tompkins
                 isHotspot: true
                 hierarchicalName: Stewart Park, Tompkins, New York, US
-                locID: L99381
   /ref/taxonomy/ebird:
     get:
       tags:
@@ -2406,6 +2516,11 @@ paths:
                 (kumlieni),kumgul1,issf,4352.0,THGU
                 ICGU,LAGL,,Charadriiformes,"Gulls, Terns, and
                 Skimmers",Laridae,y00478,,
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ebirdTaxonomy'
   /ref/taxon/forms/{speciesCode}:
     get:
       tags:
