@@ -7,7 +7,7 @@ This is a community project and is in no ways tied to eBird/Cornell.
 SDKs are generated via [Stainless](https://www.stainlessapi.com)
 
 ### go
-WIP
+https://github.com/phoebe-bird/phoebe-go
 
 ### node
-WIP
+https://github.com/phoebe-bird/phoebe-node
