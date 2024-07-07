@@ -2302,19 +2302,16 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  adjacentRegions:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        code:
-                          type: string
-                          example: US-CT
-                        name:
-                          type: string
-                          example: Connecticut
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      example: US-CT
+                    name:
+                      type: string
+                      example: Connecticut
               example:
                 - code: US-CT
                   name: Connecticut
